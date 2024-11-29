@@ -29,44 +29,37 @@ fn get_llvm_target(rust_target: &str) -> String {
             "--print", "target-spec-json",
             "--target", rust_target
         ])
-        .output()?;
+        .output()
+        .expect("Failed to get target spec");
 
-    if !output.status.success() {
-        return Err("rustc command failed".into());
-    }
+    let json: serde_json::Value = serde_json::from_slice(&output.stdout)
+        .expect("Failed to parse json target");
 
-    let json_str = String::from_utf8(output.stdout)?;
-
-    for line in json_str.lines() {
-        if line.contains("\"llvm-target\":") {
-            if let Some(target) = line.split(':')
-                .nth(1)
-                .and_then(|s| s.trim().strip_prefix('"'))
-                .and_then(|s| s.strip_suffix("\",")) {
-                return Ok(target.to_string());
-            }
-        }
-    }
-
-    Err("could not find llvm-target in JSON output".into());
+    json["llvm-target"].as_str()
+        .expect("No llvm-target in spec")
+        .to_string()
 
 }
 
-fn get_clang_definitions(target: &str) -> HashMap<String, String> {
+fn get_clang_definitions(llvm_target: &str) -> HashMap<String, String> {
 
-}
+    let output = Command::new("clang")
+        .args([
+            "-E",
+            "-dM",
+            "-x", "c",
+            "/dev/null",
+            "-target", llvm_target
+        ])
+        .output()
+        .expect("failed to run clang");
 
-fn generate_compatibility_test(target: &str, definitions: &HashMap<String, String>) -> String {
+    let defines = str::from_utf8(&output.stdout)
+        .expect("Invalid clang output");
 
 }
 
 fn main() {
     //Get list of all targets
-    let targets = get_target_list();
-
-    for target in targets {
-
-    }
-
     println!("All C interop type compatibility checks passed");
 }
