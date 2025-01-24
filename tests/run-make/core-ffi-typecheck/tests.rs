@@ -3,53 +3,11 @@
 use super::*; // `super` will include everything from `smallcore` once glued together
 
 cfg_if! {
-    if #[cfg(all(target_os = "windows", target_arch = "aarch64"))] {
-        const XFAIL_C_LONG_SIZE: usize = 4;
-        pub const TEST_C_LONG_SIZE: () = if size_of::<ffi::c_long>() != XFAIL_C_LONG_SIZE {
-            panic!("wrong c_long size test windows aarch64");
-        };
-    }
-    else if #[cfg(all(target_arch = "aarch64", target_abi = "ilp32"))] {
+    if #[cfg(all(target_arch = "aarch64", target_abi = "ilp32"))] {
+        // FIXME: long is not long enough on aarch64 ilp32, should be 8, defaulting to 4
         const XFAIL_C_LONG_SIZE: usize = 4;
         pub const TEST_C_LONG_SIZE: () = if size_of::<ffi::c_long>() != XFAIL_C_LONG_SIZE {
             panic!("wrong c_long size test ilp32");
-        };
-    }
-    else if #[cfg(all(target_pointer_width = "32", target_os = "watchos"))] {
-        const XFAIL_C_LONG_SIZE: usize = 4;
-        pub const TEST_C_LONG_SIZE: () = if size_of::<ffi::c_long>() != XFAIL_C_LONG_SIZE {
-            panic!("wrong c_long size test watchos");
-        };
-    }
-    else if #[cfg(any(
-        target_arch = "arm",
-        target_arch = "csky",
-        target_arch = "hexagon",
-        target_arch = "x86",
-        target_arch = "m68k",
-        target_arch = "mips",
-        target_arch = "mips32r6",
-        target_arch = "powerpc",
-        target_arch = "sparc"
-    ))] {
-        const XFAIL_C_LONG_SIZE: usize = 4;
-        pub const TEST_C_LONG_SIZE: () = if size_of::<ffi::c_long>() != XFAIL_C_LONG_SIZE {
-            panic!("wrong c_long size test for 32-bit architecture");
-        };
-    }
-    else if #[cfg(any(
-        target_arch = "avr",
-        target_arch = "msp430"
-    ))] {
-        const XFAIL_C_LONG_SIZE: usize = 4;
-        pub const TEST_C_LONG_SIZE: () = if size_of::<ffi::c_long>() != XFAIL_C_LONG_SIZE {
-            panic!("wrong c_long size test for embedded architecture");
-        };
-    }
-    else if #[cfg(all(target_arch = "x86_64", target_abi="x32"))] {
-        const XFAIL_C_LONG_SIZE: usize = 4;
-        pub const TEST_C_LONG_SIZE: () = if size_of::<ffi::c_long>() != XFAIL_C_LONG_SIZE {
-            panic!("wrong c_long size test x86_64 x32 ABI");
         };
     }
     else {
@@ -62,12 +20,14 @@ cfg_if! {
 
 cfg_if! {
     if #[cfg(target_arch = "csky")] {
-        const XFAIL_C_CHAR_SIGNED: bool = false;  // Change to true for darwin
+        // FIXME: c_char signedness misallignment on csky, should be signed on CLANG
+        const XFAIL_C_CHAR_SIGNED: bool = false;
         pub const TEST_C_CHAR_UNSIGNED: () = if ffi::c_char::SIGNED ^ XFAIL_C_CHAR_SIGNED {
             panic!("mismatched c_char signed, target_arch: csky");
         };
     }
     else if #[cfg(target_arch = "msp430")] {
+        // FIXME: c_char signedness misallignment on msp430, should be signed on CLANG
         const XFAIL_C_CHAR_SIGNED: bool = false;  // Change to true for darwin
         pub const TEST_C_CHAR_UNSIGNED: () = if ffi::c_char::SIGNED ^ XFAIL_C_CHAR_SIGNED {
             panic!("mismatched c_char signed, target_arch: msp430");
@@ -82,28 +42,9 @@ cfg_if! {
 
 cfg_if! {
     if #[cfg(target_arch = "avr")] {
-        const XFAIL_C_INT_SIZE: usize = 2;
-         pub const TEST_C_INT_SIZE: () = if size_of::<ffi::c_int>() != XFAIL_C_INT_SIZE {
-            panic!("mismatched c_int size, target_arch: avr");
-        };
-    }
-    else if #[cfg(target_arch = "msp430")] {
-        const XFAIL_C_INT_SIZE: usize = 2;  // Change to true for darwin
-         pub const TEST_C_INT_SIZE: () = if size_of::<ffi::c_int>() != XFAIL_C_INT_SIZE {
-            panic!("mismatched c_int size, target_arch: msp430");
-        };
-    }
-    else {
-        pub const TEST_C_INT_SIZE: () = if size_of::<ffi::c_int>() != CLANG_C_INT_SIZE {
-            panic!("wrong c_int size");
-        };
-    }
-}
-
-cfg_if! {
-    if #[cfg(target_arch = "avr")] {
-        const XFAIL_C_DOUBLE_SIZE: usize = 4;
-         pub const TEST_C_DOUBLE_SIZE: () = if size_of::<ffi::c_double>() != XFAIL_C_DOUBLE_SIZE {
+        // FIXME: double is not short enough on avr-unknown-gnu-atmega328 (should be 4 bytes)
+        const XFAIL_C_DOUBLE_SIZE: usize = 8;
+        pub const TEST_C_DOUBLE_SIZE: () = if size_of::<ffi::c_double>() != XFAIL_C_DOUBLE_SIZE {
             panic!("wrong c_double size, target_arch: avr");
         };
     }
@@ -129,6 +70,11 @@ impl Signed for u8 {
 //c_char size
 pub const TEST_C_CHAR_SIZE: () = if size_of::<ffi::c_char>() != CLANG_C_CHAR_SIZE {
     panic!("wrong c_char size");
+};
+
+//c_int size
+pub const TEST_C_INT_SIZE: () = if size_of::<ffi::c_int>() != CLANG_C_INT_SIZE {
+    panic!("mismatched c_int size");
 };
 
 //c_short size
