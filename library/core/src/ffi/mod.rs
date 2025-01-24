@@ -66,7 +66,7 @@ type_alias! { "c_longlong.md", c_longlong = i64; }
 type_alias! { "c_ulonglong.md", c_ulonglong = u64; }
 
 type_alias! { "c_float.md", c_float = f32; }
-type_alias! { "c_double.md", c_double = c_double_definition::c_double; #[doc(cfg(all()))]}
+type_alias! { "c_double.md", c_double = f64; }
 
 /// Equivalent to C's `size_t` type, from `stddef.h` (or `cstddef` for C++).
 ///
@@ -174,7 +174,7 @@ mod c_char_definition {
         ))] {
             pub type c_char = u8;
         } else {
-            // On every other target, c_char is signed.
+            // on every other target, c_char is signed.
             pub type c_char = i8;
         }
     }
@@ -201,16 +201,6 @@ mod c_long_definition {
             // The minimal size of `long` in the C standard is 32 bits
             pub type c_long = i32;
             pub type c_ulong = u32;
-        }
-    }
-}
-
-mod c_double_definition {
-    cfg_if! {
-        if #[cfg(all(target_arch = "avr"))] {
-            pub type c_double = f32;
-        } else {
-            pub type c_double = f64;
         }
     }
 }
