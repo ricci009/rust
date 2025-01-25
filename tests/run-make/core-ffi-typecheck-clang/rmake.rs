@@ -30,7 +30,6 @@ fn main() {
             r#"
             #![no_std]
             #![no_core]
-            #![feature(intrinsics)]
             #![feature(link_cfg)]
             #![allow(unused)]
             #![crate_type = "rlib"]
