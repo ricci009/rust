@@ -1,4 +1,4 @@
-// @ needs-clang
+//@ needs-force-clang-based-tests
 
 use run_make_support::{clang, regex, rfs, rustc};
 
