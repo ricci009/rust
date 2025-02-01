@@ -50,6 +50,8 @@ const EXCEPTION_PATHS: &[&str] = &[
     "library/core/src/ffi/va_list.rs",
     // We placed a linkage against Windows libraries here
     "library/core/src/ffi/mod.rs",
+    // Linkage against Windows libraries here
+    "library/core/src/ffi/primitives.rs",
     "library/std/src/sys", // Platform-specific code for std lives here.
     "library/std/src/os",  // Platform-specific public interfaces
     // Temporary `std` exceptions
